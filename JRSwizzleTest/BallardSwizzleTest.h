@@ -6,5 +6,7 @@
 
 - (void)testBallardSwizzleOfDirectMethod;
 - (void)testBallardSwizzleOfInheritedMethod;
+- (void)testBallardSwizzleOfDirectClassMethod;
+- (void)testBallardSwizzleOfInheritedClassMethod;
 
 @end

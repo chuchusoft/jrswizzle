@@ -9,9 +9,13 @@ BOOL aFooCalled, bFooCalled, bAltFooCalled;
 
 @interface A7 : NSObject {}
 - (void)foo7;
++ (void)cfoo7;
 @end
 @implementation A7
 - (void)foo7 {
+	aFooCalled = YES;
+}
++ (void)cfoo7 {
 	aFooCalled = YES;
 }
 @end
@@ -22,19 +26,27 @@ BOOL aFooCalled, bFooCalled, bAltFooCalled;
 - (void)foo7 {
 	bFooCalled = YES;
 }
++ (void)cfoo7 {
+	bFooCalled = YES;
+}
 @end
 
 @interface B7 (altFoo7)
 - (void)altFoo7;
++ (void)altCFoo7;
 @end
 @implementation B7 (altFoo7)
 - (void)altFoo7 {
+	bAltFooCalled = YES;
+}
++ (void)altCFoo7 {
 	bAltFooCalled = YES;
 }
 @end
 
 @interface JRSwizzleTest (testJRSwizzleOfDirectMethod)
 - (void)testJRSwizzleOfDirectMethod;
+- (void)testJRSwizzleOfDirectClassMethod;
 @end
 @implementation JRSwizzleTest (testJRSwizzleOfDirectMethod)
 
@@ -77,6 +89,42 @@ BOOL aFooCalled, bFooCalled, bAltFooCalled;
 	}
 }
 
+- (void)testJRSwizzleOfDirectClassMethod {
+	{
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[A7 cfoo7];
+		STAssertTrue(aFooCalled, nil);
+		STAssertFalse(bFooCalled, nil);
+		STAssertFalse(bAltFooCalled, nil);
+
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[B7 cfoo7];
+		STAssertFalse(aFooCalled, nil);
+		STAssertTrue(bFooCalled, nil);
+		STAssertFalse(bAltFooCalled, nil);
+	}
+
+	NSError *error = nil;
+	[B7 jr_swizzleClassMethod:@selector(cfoo7)
+			  withClassMethod:@selector(altCFoo7)
+						error:&error];
+	STAssertNil(error, nil);
+
+	{
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[A7 cfoo7];
+		STAssertTrue(aFooCalled, nil);
+		STAssertFalse(bFooCalled, nil);
+		STAssertFalse(bAltFooCalled, nil);
+
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[B7 cfoo7];
+		STAssertFalse(aFooCalled, nil);
+		STAssertFalse(bFooCalled, nil);
+		STAssertTrue(bAltFooCalled, nil);
+	}
+}
+
 @end
 
 #pragma mark -
@@ -85,9 +133,13 @@ BOOL aFooCalled, bFooCalled, bAltFooCalled;
 
 @interface A8 : NSObject {}
 - (void)foo8;
++ (void)cfoo8;
 @end
 @implementation A8
 - (void)foo8 {
+	aFooCalled = YES;
+}
++ (void)cfoo8 {
 	aFooCalled = YES;
 }
 @end
@@ -99,15 +151,20 @@ BOOL aFooCalled, bFooCalled, bAltFooCalled;
 
 @interface B8 (altFoo8)
 - (void)altFoo8;
++ (void)altCFoo8;
 @end
 @implementation B8 (altFoo8)
 - (void)altFoo8 {
+	bAltFooCalled = YES;
+}
++ (void)altCFoo8 {
 	bAltFooCalled = YES;
 }
 @end
 
 @interface JRSwizzleTest (testJRSwizzleOfInheritedMethod)
 - (void)testJRSwizzleOfInheritedMethod;
+- (void)testJRSwizzleOfInheritedClassMethod;
 @end
 @implementation JRSwizzleTest (testJRSwizzleOfInheritedMethod)
 
@@ -144,6 +201,42 @@ BOOL aFooCalled, bFooCalled, bAltFooCalled;
 		
 		aFooCalled = bFooCalled = bAltFooCalled = NO;
 		[b foo8];
+		STAssertFalse(aFooCalled, nil);
+		STAssertFalse(bFooCalled, nil);
+		STAssertTrue(bAltFooCalled, nil);
+	}
+}
+
+- (void)testJRSwizzleOfInheritedClassMethod {
+	{
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[A8 cfoo8];
+		STAssertTrue(aFooCalled, nil);
+		STAssertFalse(bFooCalled, nil);
+		STAssertFalse(bAltFooCalled, nil);
+
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[B8 cfoo8];
+		STAssertTrue(aFooCalled, nil);
+		STAssertFalse(bFooCalled, nil);
+		STAssertFalse(bAltFooCalled, nil);
+	}
+
+	NSError *error = nil;
+	[B8 jr_swizzleClassMethod:@selector(cfoo8)
+			  withClassMethod:@selector(altCFoo8)
+						error:&error];
+	STAssertNil(error, nil);
+
+	{
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[A8 cfoo8];
+		STAssertTrue(aFooCalled, nil); // CORRECT BEHAVIOR
+		STAssertFalse(bFooCalled, nil);
+		STAssertFalse(bAltFooCalled, nil);
+
+		aFooCalled = bFooCalled = bAltFooCalled = NO;
+		[B8 cfoo8];
 		STAssertFalse(aFooCalled, nil);
 		STAssertFalse(bFooCalled, nil);
 		STAssertTrue(bAltFooCalled, nil);

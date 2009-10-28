@@ -6,5 +6,7 @@
 
 - (void)testAppleSwizzleOfDirectMethod;
 - (void)testAppleSwizzleOfInheritedMethod;
+- (void)testAppleSwizzleOfDirectClassMethod;
+- (void)testAppleSwizzleOfInheritedClassMethod;
 
 @end
